@@ -10,7 +10,10 @@ if not os.path.exists("letters"):
 def sanction_letter_generator(name, amount, tenure):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial", size=12)
+
+    # Add a Unicode font (DejaVuSans supports ₹ and other symbols)
+    pdf.add_font("DejaVu", "", fname="/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", uni=True)
+    pdf.set_font("DejaVu", size=12)
 
     # Title
     pdf.cell(200, 10, txt="Loan Sanction Letter", ln=True, align='C')
@@ -34,7 +37,7 @@ Loan Department
 
     # Save file
     file_path = f"letters/Sanction_Letter_{name.replace(' ', '_')}.pdf"
-    pdf.output(file_path, "F")
+    pdf.output(file_path)
     return file_path
 
 # ---------------- Streamlit UI ---------------- #
