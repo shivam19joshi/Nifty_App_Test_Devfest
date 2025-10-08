@@ -136,4 +136,3 @@ if st.button("Start Loan Process"):
             st.success("Sanction Letter Generated!")
             with open(file_name, "rb") as f:
                 st.download_button("Download Sanction Letter", f, file_name=file_name)
-
