@@ -81,7 +81,7 @@ def underwriting_agent(customer, loan_amount, tenure):
 # ---------------------------
 # Streamlit UI - Chat simulation
 # ---------------------------
-st.title("💬 Tata Capital Loan Chatbot - Interactive Hackathon Demo")
+st.title("💬 Welcome To Tata Capital Loan Chatbot")
 
 # Select customer
 customer_name = st.selectbox("Select Customer", customers["name"].tolist())
