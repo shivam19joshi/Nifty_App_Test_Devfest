@@ -149,11 +149,18 @@ if st.session_state.step==4:
 # ---------------------------
 # Step 5: Sanction Letter
 # ---------------------------
+
 import streamlit as st
 from fpdf import FPDF
 import pandas as pd
 
-# Fetch data from session_state
+# Ensure required session_state variables exist
+required_keys = ["customer", "loan_amount", "tenure", "interest", "purpose"]
+for key in required_keys:
+    if key not in st.session_state:
+        st.warning(f"{key} not set yet! Complete previous steps first.")
+        st.stop()  # stops execution until previous steps done
+
 customer = st.session_state.customer
 loan_amount = st.session_state.loan_amount
 tenure = st.session_state.tenure
@@ -208,8 +215,6 @@ pdf.output(file_name)
 
 st.success("✅ Sanction Letter generated successfully!")
 st.download_button("Download Sanction Letter", file_name, file_name, "application/pdf")
-
-
 
 
 st.write("Created By Shivam Joshi")
