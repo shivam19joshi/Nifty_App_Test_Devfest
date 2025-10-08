@@ -149,27 +149,17 @@ if st.session_state.step==4:
 # ---------------------------
 # Step 5: Sanction Letter
 # ---------------------------
-if st.session_state.step == 4 and "Approved" in uw_result:
-    st.subheader("🎉 Loan Approved! Ready to generate Sanction Letter")
-    if st.button("Next: Generate Sanction Letter"):
-        from fpdf import FPDF
-        import pandas as pd
+from fpdf import FPDF
+import pandas as pd
 
-        customer = st.session_state.customer
-        loan_amount = st.session_state.loan_amount
-        tenure = st.session_state.tenure
-        interest = st.session_state.interest
-        purpose = st.session_state.purpose
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Arial", "B", 16)
+pdf.cell(0, 10, "Tata Capital Finance Pvt. Ltd.", ln=True, align="C")
+pdf.set_font("Arial", "", 12)
+pdf.ln(10)
 
-        # Generate Sanction Letter PDF
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("Arial", "B", 16)
-        pdf.cell(0, 10, "Tata Capital Finance Pvt. Ltd.", ln=True, align="C")
-        pdf.set_font("Arial", "", 12)
-        pdf.ln(10)
-
-        pdf.multi_cell(0, 8, f"""
+pdf.multi_cell(0, 8, f"""
 Sanction Letter
 Date: {pd.Timestamp.now().date()}
 
@@ -193,7 +183,7 @@ Terms & Conditions:
 1. The loan must be utilized solely for the stated purpose.
 2. All EMI payments shall be made on or before the due date.
 3. Prepayment/foreclosure charges as per the bank policy apply.
-4. The loan remains subject to compliance with Tata Capital’s policies.
+4. The loan remains subject to compliance with Tata Capital's policies.
 5. CIBIL score may be periodically reviewed during the tenure of the loan.
 
 Please sign and return the duplicate copy of this sanction letter to proceed with disbursal.
@@ -204,11 +194,9 @@ Sincerely,
 Tata Capital Loan Desk
 """)
 
-        file_name = f"Sanction_Letter_{customer['name'].replace(' ','_')}.pdf"
-        pdf.output(file_name)
+file_name = f"Sanction_Letter_{customer['name'].replace(' ','_')}.pdf"
+pdf.output(file_name)
 
-        st.success("✅ Sanction Letter generated successfully!")
-        st.download_button("Download PDF", file_name, file_name)
 
 
 st.write("Created By Shivam Joshi")
