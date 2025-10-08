@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="Tata Capital Loan Chatbot", layout="wide")
+st.set_page_config(page_title="Tata Capital Loan Assistant", layout="wide")
 
 # ---------------------------
-# Synthetic Customer Data (20 customers)
+# Customer Data
 # ---------------------------
 customers_data = [
     {"name": "Amit Sharma", "age": 32, "mobile": "9999991111", "address": "Mumbai",
@@ -49,124 +49,83 @@ customers_data = [
      "cibil_score": 740, "pre_approved_limit": 320000, "pan": "IJKL1234O"},
 ]
 
+
 customers = pd.DataFrame(customers_data)
 
 # ---------------------------
 # Worker Agents
 # ---------------------------
 def sales_agent(customer, loan_amount, tenure, interest):
-    return f"Sales Agent: Hello {customer['name']}! Your pre-approved limit is ₹{customer['pre_approved_limit']}. You requested ₹{loan_amount} for {tenure} years at {interest}% p.a."
+    return f"Hello {customer['name']}! Your pre-approved limit is ₹{customer['pre_approved_limit']}. You requested ₹{loan_amount} for {tenure} years at {interest}% p.a."
 
-def verification_agent(customer, entered_pan, entered_mobile):
-    pan_check = "✅" if entered_pan==customer["pan"] else "❌"
-    mobile_check = "✅" if entered_mobile==customer["mobile"] else "❌"
+def verification_agent(customer, pan, mobile):
+    pan_check = "✅" if pan==customer["pan"] else "❌"
+    mobile_check = "✅" if mobile==customer["mobile"] else "❌"
     if pan_check=="✅" and mobile_check=="✅":
-        return "Verification Agent: KYC Approved ✅"
-    else:
-        return f"Verification Agent: KYC Failed ❌ (PAN:{pan_check}, Mobile:{mobile_check})"
+        return "KYC Approved ✅"
+    return f"KYC Failed ❌ (PAN:{pan_check}, Mobile:{mobile_check})"
 
 def underwriting_agent(customer, loan_amount):
-    credit_score = customer["cibil_score"]
+    if customer["cibil_score"] < 700:
+        return "Loan Rejected ❌ due to low CIBIL score."
     limit = customer["pre_approved_limit"]
-    if credit_score < 700:
-        return "Underwriting Agent: ❌ Rejected due to low CIBIL score."
     if loan_amount <= limit:
-        return "Underwriting Agent: ✅ Approved within pre-approved limit."
+        return "Loan Approved ✅ within pre-approved limit."
     elif loan_amount <= 2*limit:
-        return "Underwriting Agent: ✅ Approved after manual check."
+        return "Loan Approved ✅ after manual check."
     else:
-        return "Underwriting Agent: ❌ Loan exceeds 2× pre-approved limit."
+        return "Loan Rejected ❌ exceeds 2× pre-approved limit."
 
 # ---------------------------
-# Session state initialization
+# Session State
 # ---------------------------
-if "stage" not in st.session_state:
-    st.session_state.stage = "select_customer"
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+if "step" not in st.session_state:
+    st.session_state.step = 0
 
-# ---------------------------
-# Chat helper
-# ---------------------------
-def add_message(sender, message):
-    st.session_state.chat_history.append({"sender": sender, "message": message})
+st.title("💰 Tata Capital Loan Assistant")
 
-for chat in st.session_state.chat_history:
-    if chat["sender"]=="user":
-        st.chat_message("user").write(chat["message"])
-    else:
-        st.chat_message("assistant").write(chat["message"])
-
-# ---------------------------
-# Customer selection
-# ---------------------------
-st.title("💬 Tata Capital Loan Chatbot")
-
-if st.session_state.stage == "select_customer":
+# Step 0: Select Customer
+if st.session_state.step==0:
     customer_name = st.selectbox("Select Customer", customers["name"].tolist())
-    if st.button("Start Chat"):
+    if st.button("Start Loan Process"):
         st.session_state.customer = customers[customers["name"]==customer_name].iloc[0]
-        add_message("assistant", f"Hello {customer_name}! I am your Loan Assistant. Please type 'Hello' to start your loan request.")
-        st.session_state.stage = "greet"
+        st.session_state.step = 1
 
-# ---------------------------
-# Chat input
-# ---------------------------
-if st.session_state.stage in ["greet", "loan_request", "interest_rate", "kyc_pan", "kyc_mobile"]:
-    if user_input := st.chat_input("Type your message..."):
-        add_message("user", user_input)
-        customer = st.session_state.customer
+# Step 1: Show pre-approved limit & choose loan
+if st.session_state.step==1:
+    customer = st.session_state.customer
+    st.write(f"Hello {customer['name']}! Your pre-approved limit is ₹{customer['pre_approved_limit']}.")
+    loan_amount = st.number_input("Enter Loan Amount", min_value=10000, max_value=customer['pre_approved_limit'], step=5000)
+    tenure = st.selectbox("Select Tenure (years)", [1,2,3,4,5])
+    if st.button("Next: Interest Rate"):
+        st.session_state.loan_amount = loan_amount
+        st.session_state.tenure = tenure
+        st.session_state.step = 2
 
-        # Greeting stage
-        if st.session_state.stage=="greet":
-            if "hello" in user_input.lower():
-                add_message("assistant", f"Great! Your pre-approved limit is ₹{customer['pre_approved_limit']}. Please enter loan amount and tenure in years (e.g., 250000 3).")
-                st.session_state.stage = "loan_request"
-            else:
-                add_message("assistant", "Please type 'Hello' to start the loan request.")
+# Step 2: Interest Rate Selection
+if st.session_state.step==2:
+    interest = st.slider("Select Interest Rate (%)", 16, 24, 18)
+    if st.button("Next: KYC"):
+        st.session_state.interest = interest
+        st.session_state.step = 3
 
-        # Loan request stage
-        elif st.session_state.stage=="loan_request":
-            try:
-                parts = user_input.split()
-                loan_amount = int(parts[0])
-                tenure = int(parts[1])
-                st.session_state.loan_amount = loan_amount
-                st.session_state.tenure = tenure
-                add_message("assistant", "Please choose an interest rate between 16% - 24% p.a. (e.g., 18)")
-                st.session_state.stage = "interest_rate"
-            except:
-                add_message("assistant", "Enter in format: <amount> <tenure> (e.g., 250000 3)")
+# Step 3: KYC Verification
+if st.session_state.step==3:
+    pan = st.text_input("Enter PAN Number")
+    mobile = st.text_input("Enter Mobile Number")
+    if st.button("Verify KYC"):
+        kyc_result = verification_agent(st.session_state.customer, pan, mobile)
+        st.write(kyc_result)
+        if "Approved" in kyc_result:
+            st.session_state.step = 4
+        else:
+            st.warning("KYC Failed. Please enter correct details.")
 
-        # Interest rate stage
-        elif st.session_state.stage=="interest_rate":
-            try:
-                interest = float(user_input)
-                if 16 <= interest <= 24:
-                    st.session_state.interest = interest
-                    add_message("assistant", sales_agent(customer, st.session_state.loan_amount, st.session_state.tenure, interest))
-                    add_message("assistant", "Please enter your PAN number:")
-                    st.session_state.stage = "kyc_pan"
-                else:
-                    add_message("assistant", "Interest must be between 16% - 24%. Try again.")
-            except:
-                add_message("assistant", "Please enter a valid number for interest rate.")
-
-        # KYC PAN stage
-        elif st.session_state.stage=="kyc_pan":
-            st.session_state.entered_pan = user_input
-            add_message("assistant", "Now enter your registered Mobile Number:")
-            st.session_state.stage = "kyc_mobile"
-
-        # KYC Mobile stage
-        elif st.session_state.stage=="kyc_mobile":
-            st.session_state.entered_mobile = user_input
-            kyc_result = verification_agent(customer, st.session_state.entered_pan, st.session_state.entered_mobile)
-            add_message("assistant", kyc_result)
-            if "✅" in kyc_result:
-                uw_result = underwriting_agent(customer, st.session_state.loan_amount)
-                add_message("assistant", uw_result)
-                st.session_state.stage = "completed"
-            else:
-                add_message("assistant", "KYC Failed. Please restart the chat with correct details.")
-                st.session_state.stage = "loan_request"
+# Step 4: Underwriting
+if st.session_state.step==4:
+    uw_result = underwriting_agent(st.session_state.customer, st.session_state.loan_amount)
+    st.write(f"Underwriting Result: {uw_result}")
+    if "Approved" in uw_result:
+        st.success("🎉 Loan is ready to be sanctioned on next page!")
+    else:
+        st.error("Loan Rejected. Process ends here.")
