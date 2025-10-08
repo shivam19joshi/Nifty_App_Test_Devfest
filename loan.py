@@ -1,9 +1,22 @@
 import streamlit as st
 import pandas as pd
 from fpdf import FPDF
+import os
+import urllib.request
 
 # ---------------------------
-# Synthetic Data
+# Ensure Unicode Font
+# ---------------------------
+FONT_URL = "https://github.com/dejavu-fonts/dejavu-fonts/raw/master/ttf/DejaVuSans.ttf"
+FONT_FILE = "DejaVuSans.ttf"
+
+if not os.path.exists(FONT_FILE):
+    st.info("Downloading font for PDF generation...")
+    urllib.request.urlretrieve(FONT_URL, FONT_FILE)
+    st.success("Font downloaded ✅")
+
+# ---------------------------
+# Synthetic Customer Data
 # ---------------------------
 customers = pd.DataFrame([
     {"id": 1, "name": "Amit Sharma", "age": 32, "city": "Mumbai", "phone": "9999991111",
@@ -31,15 +44,13 @@ customers = pd.DataFrame([
 # ---------------------------
 # Worker Agents
 # ---------------------------
-
 def sales_agent(customer, loan_amount, tenure):
-    return f"Sales Agent: {customer['name']}, you are requesting ₹{loan_amount} for {tenure} years. Let's check eligibility."
+    return f"Sales Agent: {customer['name']}, you requested ₹{loan_amount} for {tenure} years. Let’s check eligibility."
 
 def verification_agent(customer, phone):
     if phone == customer["phone"]:
         return "Verification Agent: ✅ KYC verified."
-    else:
-        return "Verification Agent: ❌ KYC failed. Wrong phone number."
+    return "Verification Agent: ❌ KYC failed. Wrong phone number."
 
 def underwriting_agent(customer, loan_amount, tenure, salary_slip_uploaded=False):
     credit_score = customer["credit_score"]
@@ -54,51 +65,50 @@ def underwriting_agent(customer, loan_amount, tenure, salary_slip_uploaded=False
     
     elif loan_amount <= 2 * pre_limit:
         if not salary_slip_uploaded:
-            return "Underwriting Agent: 📄 Please upload your salary slip for verification."
+            return "Underwriting Agent: 📄 Please upload salary slip for verification."
         else:
-            emi = (loan_amount / (tenure * 12)) * 1.1  # Simple EMI calc with interest
+            emi = (loan_amount / (tenure * 12)) * 1.1  # Simple EMI calculation
             if emi <= 0.5 * salary:
                 return "Underwriting Agent: ✅ Approved after salary slip verification."
-            else:
-                return "Underwriting Agent: ❌ Rejected, EMI exceeds 50% of salary."
+            return "Underwriting Agent: ❌ Rejected, EMI exceeds 50% of salary."
     
-    else:
-        return "Underwriting Agent: ❌ Rejected, request exceeds 2× pre-approved limit."
+    return "Underwriting Agent: ❌ Rejected, request exceeds 2× pre-approved limit."
 
+# ---------------------------
+# Sanction Letter Generator
+# ---------------------------
 def sanction_letter_generator(customer, loan_amount, tenure):
-    file_name = f"Sanction_Letter_{customer['name'].replace(' ', '_')}.pdf"
-    
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    
-    pdf.cell(200, 10, txt="Loan Sanction Letter", ln=True, align='C')
-    pdf.ln(10)
-    
+    pdf.add_font("DejaVu", "", FONT_FILE, uni=True)
+    pdf.set_font("DejaVu", size=12)
+
     text = f"""
-    Dear {customer['name']},
+Loan Sanction Letter
 
-    Congratulations! Your personal loan request has been approved.
+Dear {customer['name']},
 
-    Loan Amount: ₹{loan_amount}
-    Tenure: {tenure} years
-    Interest Rate: 11% (Fixed)
-    Pre-Approved Limit: ₹{customer['pre_approved_limit']}
-    Credit Score: {customer['credit_score']}
+Congratulations! Your personal loan request has been approved.
 
-    Thank you for choosing Tata Capital.
+Loan Amount: ₹{loan_amount}
+Tenure: {tenure} years
+Pre-Approved Limit: ₹{customer['pre_approved_limit']}
+Credit Score: {customer['credit_score']}
 
-    Sincerely,
-    Tata Capital Loan Team
-    """
-    pdf.multi_cell(0, 10, txt=text)
+Thank you for choosing Tata Capital.
+
+Sincerely,
+Tata Capital Loan Team
+"""
+    pdf.multi_cell(0, 10, text)
+    file_name = f"Sanction_Letter_{customer['name'].replace(' ', '_')}.pdf"
     pdf.output(file_name)
     return file_name
 
 # ---------------------------
-# Master Agent Orchestration
+# Master Agent Orchestration (Streamlit)
 # ---------------------------
-st.title("💬 Tata Capital - Agentic AI Loan Sales Assistant")
+st.title("💬 Tata Capital - Agentic AI Loan Assistant")
 
 customer_name = st.selectbox("Select Customer", customers["name"].tolist())
 customer = customers[customers["name"] == customer_name].iloc[0]
@@ -113,29 +123,28 @@ phone_input = st.text_input("Enter Phone for KYC Verification")
 if st.button("Start Loan Process"):
     st.write(sales_agent(customer, loan_amount, tenure))
 
-    # Verification
     verify_msg = verification_agent(customer, phone_input)
     st.write(verify_msg)
 
     if "❌" in verify_msg:
         st.error("Process stopped due to KYC failure.")
     else:
-        # Underwriting
-        underwriting_msg = underwriting_agent(customer, loan_amount, tenure)
-        st.write(underwriting_msg)
+        uw_msg = underwriting_agent(customer, loan_amount, tenure)
+        st.write(uw_msg)
 
-        if "📄" in underwriting_msg:
+        if "📄" in uw_msg:
             uploaded_file = st.file_uploader("Upload Salary Slip (PDF)", type=["pdf"])
             if uploaded_file and st.button("Recheck with Salary Slip"):
-                uw_msg = underwriting_agent(customer, loan_amount, tenure, salary_slip_uploaded=True)
-                st.write(uw_msg)
-                if "✅" in uw_msg:
+                uw_msg2 = underwriting_agent(customer, loan_amount, tenure, salary_slip_uploaded=True)
+                st.write(uw_msg2)
+                if "✅" in uw_msg2:
                     file_name = sanction_letter_generator(customer, loan_amount, tenure)
-                    st.success("✅ Sanction Letter Generated!")
                     with open(file_name, "rb") as f:
                         st.download_button("⬇️ Download Sanction Letter", f, file_name=file_name)
-        elif "✅" in underwriting_msg:
+                    st.success("Sanction letter generated successfully ✅")
+
+        elif "✅" in uw_msg:
             file_name = sanction_letter_generator(customer, loan_amount, tenure)
-            st.success("✅ Sanction Letter Generated!")
             with open(file_name, "rb") as f:
                 st.download_button("⬇️ Download Sanction Letter", f, file_name=file_name)
+            st.success("Sanction letter generated successfully ✅")
