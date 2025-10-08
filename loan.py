@@ -85,10 +85,10 @@ if "step" not in st.session_state:
 
 st.title("Welcome To Tata Capital Personal Loan Smart Chat")
 st.subheader("हर ज़रूरत के लिए, हर कदम पर आपके साथ।")
-st.subheader("Hello! Customer Enter your Pan and DOB to verify")
 
 # Step 0: Get PAN & DOB
 if st.session_state.step==0:
+    st.subheader("Hello! Customer Enter your Pan and DOB to verify")
     pan_input = st.text_input("Enter Your PAN Number")
     dob_input = st.text_input("Enter Your Date of Birth (YYYY-MM-DD)")
     purpose = st.selectbox("Purpose of Loan", ["Travel", "Education", "Shopping", "Healthcare", "Other"])
