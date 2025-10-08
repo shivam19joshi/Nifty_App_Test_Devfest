@@ -84,7 +84,7 @@ if "step" not in st.session_state:
     st.session_state.interest = random.randint(16,24)  # random interest
 
 st.title("Welcome To Tata Capital Personal Loan Smart Chat")
-st.subheader("Transforming Aspirations into Realities")
+st.subheader("हर ज़रूरत के लिए, हर कदम पर आपके साथ।")
 st.subheader("Hello! Customer Enter your Pan and DOB to verify")
 
 # Step 0: Get PAN & DOB
