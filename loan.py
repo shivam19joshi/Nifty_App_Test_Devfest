@@ -146,23 +146,30 @@ if st.session_state.step==4:
     else:
         st.error("Loan Rejected. Process ends here.")
 
-import streamlit as st
-from fpdf import FPDF
-import random
+# ---------------------------
+# Step 5: Sanction Letter
+# ---------------------------
+if st.session_state.step == 4 and "Approved" in uw_result:
+    st.subheader("🎉 Loan Approved! Ready to generate Sanction Letter")
+    if st.button("Next: Generate Sanction Letter"):
+        from fpdf import FPDF
+        import pandas as pd
 
-# ---------------------------
-# Sanction Letter Generator
-# ---------------------------
-def generate_sanction_letter(customer, loan_amount, tenure, interest, purpose):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", "B", 16)
-    
-    pdf.cell(0, 10, "Tata Capital Finance Pvt. Ltd.", ln=True, align="C")
-    pdf.set_font("Arial", "", 12)
-    pdf.ln(10)
-    
-    pdf.multi_cell(0, 8, f"""
+        customer = st.session_state.customer
+        loan_amount = st.session_state.loan_amount
+        tenure = st.session_state.tenure
+        interest = st.session_state.interest
+        purpose = st.session_state.purpose
+
+        # Generate Sanction Letter PDF
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", "B", 16)
+        pdf.cell(0, 10, "Tata Capital Finance Pvt. Ltd.", ln=True, align="C")
+        pdf.set_font("Arial", "", 12)
+        pdf.ln(10)
+
+        pdf.multi_cell(0, 8, f"""
 Sanction Letter
 Date: {pd.Timestamp.now().date()}
 
@@ -196,31 +203,12 @@ We thank you for choosing Tata Capital for your financial needs.
 Sincerely,
 Tata Capital Loan Desk
 """)
-    
-    file_name = f"Sanction_Letter_{customer['name'].replace(' ','_')}.pdf"
-    pdf.output(file_name)
-    return file_name
 
-# ---------------------------
-# Streamlit UI
-# ---------------------------
-st.title("📄 Loan Sanction Letter")
-st.write("Generating your official sanction letter...")
+        file_name = f"Sanction_Letter_{customer['name'].replace(' ','_')}.pdf"
+        pdf.output(file_name)
 
-# Fetch details from session_state
-customer = st.session_state.customer
-loan_amount = st.session_state.loan_amount
-tenure = st.session_state.tenure
-interest = st.session_state.interest
-purpose = st.session_state.purpose
-
-# Generate PDF
-file_name = generate_sanction_letter(customer, loan_amount, tenure, interest, purpose)
-
-st.success("✅ Sanction Letter generated successfully!")
-st.write("Download your official loan sanction letter below:")
-st.download_button("Download PDF", file_name, file_name)
-
+        st.success("✅ Sanction Letter generated successfully!")
+        st.download_button("Download PDF", file_name, file_name)
 
 
 st.write("Created By Shivam Joshi")
