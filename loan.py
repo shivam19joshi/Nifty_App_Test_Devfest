@@ -172,4 +172,4 @@ if isinstance(st.session_state.approved, tuple):
     if file_path and os.path.exists(file_path):
         st.success("🎉 Congratulations! Your loan is approved.")
         with open(file_path, "rb") as f:
-            st.download_button("📥 Download Sanction_
+            st.download_button("📥 Download Sanction_")
