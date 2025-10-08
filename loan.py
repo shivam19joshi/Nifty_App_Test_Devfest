@@ -4,16 +4,14 @@ import pandas as pd
 st.set_page_config(page_title="Tata Capital Loan Chatbot", layout="wide")
 
 # ---------------------------
-# Synthetic Customer Data
+# Customer Data
 # ---------------------------
 customers_data = [
     {"name": "Amit Sharma", "age": 32, "mobile": "9999991111", "address": "Mumbai",
      "cibil_score": 780, "pre_approved_limit": 500000, "pan": "ABCDE1234F"},
     {"name": "Priya Iyer", "age": 28, "mobile": "8888882222", "address": "Delhi",
      "cibil_score": 720, "pre_approved_limit": 300000, "pan": "PQRS5678K"},
-    {"name": "Rohit Gupta", "age": 40, "mobile": "7777773333", "address": "Pune",
-     "cibil_score": 650, "pre_approved_limit": 200000, "pan": "LMNO9012T"},
-    # ... add all 20 customers ...
+    # ... add remaining 18 customers ...
 ]
 
 customers = pd.DataFrame(customers_data)
@@ -28,11 +26,11 @@ def verification_agent(customer, entered_pan, entered_mobile):
     pan_check = "✅" if entered_pan==customer["pan"] else "❌"
     mobile_check = "✅" if entered_mobile==customer["mobile"] else "❌"
     if pan_check=="✅" and mobile_check=="✅":
-        return f"Verification Agent: KYC Approved ✅"
+        return "Verification Agent: KYC Approved ✅"
     else:
         return f"Verification Agent: KYC Failed ❌ (PAN:{pan_check}, Mobile:{mobile_check})"
 
-def underwriting_agent(customer, loan_amount, tenure):
+def underwriting_agent(customer, loan_amount):
     credit_score = customer["cibil_score"]
     limit = customer["pre_approved_limit"]
     if credit_score < 700:
@@ -45,53 +43,71 @@ def underwriting_agent(customer, loan_amount, tenure):
         return "Underwriting Agent: ❌ Loan exceeds 2× pre-approved limit."
 
 # ---------------------------
-# Streamlit Chat UI
+# Streamlit Chat Setup
 # ---------------------------
-st.title("💬 Tata Capital Loan Chatbot - Interactive Hackathon Demo")
+st.title("💬 Tata Capital Loan Chatbot")
 
-if "chat_history" not in st.session_state:
-    st.session_state["chat_history"] = []
+# Select customer at the beginning
+if "customer_selected" not in st.session_state:
+    customer_name = st.selectbox("Select Customer", customers["name"].tolist())
+    st.session_state.customer = customers[customers["name"]==customer_name].iloc[0]
+    st.session_state.customer_selected = True
+    st.session_state.stage = "greet"
+    st.session_state.chat_history = []
 
-# Select customer
-customer_name = st.selectbox("Select Customer", customers["name"].tolist())
-customer = customers[customers["name"]==customer_name].iloc[0]
+customer = st.session_state.customer
 
-# ---- Chat simulation ----
+# ---------------------------
+# Add messages to history
+# ---------------------------
 def add_message(sender, message):
     st.session_state.chat_history.append({"sender": sender, "message": message})
 
-# Step 1: Customer says hello
-if len(st.session_state.chat_history) == 0:
-    add_message("user", "Hello, I want a personal loan.")
-
-# Step 2: Show pre-approved limit + select amount, tenure, interest
-with st.form("loan_request_form"):
-    loan_amount = st.number_input(f"Enter Loan Amount (max ₹{customer['pre_approved_limit']})",
-                                  min_value=10000, max_value=customer['pre_approved_limit'],
-                                  value=customer['pre_approved_limit'], step=5000)
-    tenure = st.selectbox("Select Tenure (years)", [1,2,3,4,5])
-    interest = st.slider("Select Interest Rate (% p.a.)", min_value=16, max_value=24, value=18)
-    submitted = st.form_submit_button("Submit Loan Request")
-    
-    if submitted:
-        add_message("bot", sales_agent(customer, loan_amount, tenure, interest))
-
-# Step 3: KYC Verification
-with st.form("kyc_form"):
-    entered_pan = st.text_input("Enter PAN Number")
-    entered_mobile = st.text_input("Enter Mobile Number")
-    kyc_submit = st.form_submit_button("Verify KYC")
-    
-    if kyc_submit:
-        kyc_result = verification_agent(customer, entered_pan, entered_mobile)
-        add_message("bot", kyc_result)
-        if "✅" in kyc_result:
-            uw_result = underwriting_agent(customer, loan_amount, tenure)
-            add_message("bot", uw_result)
-
-# Display chat messages
+# Display all chat messages
 for chat in st.session_state.chat_history:
     if chat["sender"] == "user":
         st.chat_message("user").write(chat["message"])
     else:
         st.chat_message("assistant").write(chat["message"])
+
+# ---------------------------
+# Chat input
+# ---------------------------
+if user_input := st.chat_input("Type your message..."):
+    add_message("user", user_input)
+    
+    # Stage-based conversation
+    if st.session_state.stage == "greet":
+        add_message("assistant", f"Hello {customer['name']}! I am your Loan Assistant. Your pre-approved limit is ₹{customer['pre_approved_limit']}. Please tell me the amount you want to apply for and tenure in years (e.g., 250000 3).")
+        st.session_state.stage = "loan_request"
+        
+    elif st.session_state.stage == "loan_request":
+        try:
+            parts = user_input.split()
+            loan_amount = int(parts[0])
+            tenure = int(parts[1])
+            interest = 18  # Default, could extend later
+            st.session_state.loan_amount = loan_amount
+            st.session_state.tenure = tenure
+            add_message("assistant", sales_agent(customer, loan_amount, tenure, interest))
+            add_message("assistant", "Please enter your PAN number:")
+            st.session_state.stage = "kyc_pan"
+        except:
+            add_message("assistant", "Please enter in format: <amount> <tenure> (e.g., 250000 3)")
+    
+    elif st.session_state.stage == "kyc_pan":
+        st.session_state.entered_pan = user_input
+        add_message("assistant", "Now enter your registered Mobile Number:")
+        st.session_state.stage = "kyc_mobile"
+    
+    elif st.session_state.stage == "kyc_mobile":
+        st.session_state.entered_mobile = user_input
+        kyc_result = verification_agent(customer, st.session_state.entered_pan, st.session_state.entered_mobile)
+        add_message("assistant", kyc_result)
+        if "✅" in kyc_result:
+            uw_result = underwriting_agent(customer, st.session_state.loan_amount)
+            add_message("assistant", uw_result)
+            st.session_state.stage = "completed"
+        else:
+            add_message("assistant", "KYC Failed. Please restart the chat with correct details.")
+            st.session_state.stage = "greet"
