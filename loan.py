@@ -1,7 +1,7 @@
 import streamlit as st
 import random
-import json
 from fpdf import FPDF
+import os
 
 # --------------------------
 # Dummy Customer Data (CRM + Pre-approved offers)
@@ -48,7 +48,7 @@ def underwriting_agent(customer_id, loan_amount, tenure, salary_slip_uploaded=Fa
     pre_limit = cust["pre_approved_limit"]
     salary = cust["salary"]
     
-    # Simple EMI calc (flat interest assumption for demo)
+    # Simple EMI calc (flat assumption for demo)
     emi = loan_amount / tenure  
     
     # Decision Logic
@@ -63,7 +63,7 @@ def underwriting_agent(customer_id, loan_amount, tenure, salary_slip_uploaded=Fa
             if emi <= 0.5 * salary:
                 return f"✅ Approved after salary slip check. Credit Score = {credit_score}", True
             else:
-                return f"❌ Rejected. EMI {emi} > 50% of Salary {salary}", False
+                return f"❌ Rejected. EMI {emi:.2f} > 50% of Salary {salary}", False
     else:
         return f"❌ Rejected. Loan amount {loan_amount} > 2x Pre-approved limit {pre_limit}", False
 
@@ -84,10 +84,10 @@ def sanction_letter_generator(customer_id, loan_amount, tenure, rate=12.0):
     pdf.cell(200, 10, txt=f"Loan Amount: {loan_amount}", ln=True)
     pdf.cell(200, 10, txt=f"Tenure: {tenure} months", ln=True)
     pdf.cell(200, 10, txt=f"Rate of Interest: {rate}%", ln=True)
-    pdf.cell(200, 10, txt="Status: Approved ✅", ln=True)
+    pdf.cell(200, 10, txt="Status: Approved", ln=True)   # removed emojis for safety
     
     file_path = f"sanction_letter_{customer_id}.pdf"
-    pdf.output(file_path)
+    pdf.output(file_path, 'F')
     return file_path
 
 # --------------------------
@@ -102,6 +102,10 @@ if "verified" not in st.session_state:
     st.session_state.verified = False
 if "approved" not in st.session_state:
     st.session_state.approved = None
+if "loan_request" not in st.session_state:
+    st.session_state.loan_request = None
+if "salary_needed" not in st.session_state:
+    st.session_state.salary_needed = False
 
 # Chat input
 user_input = st.chat_input("Say something...")
@@ -120,28 +124,27 @@ if user_input:
     elif not st.session_state.verified:
         reply = verification_agent(st.session_state["name"])
         st.session_state.verified = True
+        reply += "\nPlease enter loan amount and tenure in months (e.g., '200000 24')."
     
-    elif st.session_state.approved is None:
+    elif st.session_state.loan_request is None:
         try:
             amount, tenure = map(int, user_input.split())
+            st.session_state.loan_request = (amount, tenure)
             decision, status = underwriting_agent(st.session_state["name"], amount, tenure)
             reply = decision
             if status is True:
                 st.session_state.approved = (amount, tenure)
             elif status is False:
                 st.session_state.approved = False
+            elif status is None:
+                st.session_state.salary_needed = True
+                reply += "\nPlease upload your salary slip below."
         except:
             reply = "Please enter loan amount and tenure in months (e.g., '200000 24')."
     
-    elif st.session_state.approved is not False and isinstance(st.session_state.approved, tuple):
-        amount, tenure = st.session_state.approved
-        file_path = sanction_letter_generator(st.session_state["name"], amount, tenure)
-        reply = f"🎉 Congratulations! Your loan is approved.\n👉 [Download Sanction Letter]({file_path})"
-        st.session_state.approved = "done"
-    
     else:
-        reply = "Sorry, your loan request could not be approved."
-    
+        reply = "Please upload salary slip if requested below."
+
     st.session_state.chat.append(("bot", reply))
 
 # Display chat
@@ -150,3 +153,23 @@ for role, msg in st.session_state.chat:
         st.chat_message("user").markdown(msg)
     else:
         st.chat_message("assistant").markdown(msg)
+
+# Salary Slip Upload Section
+if st.session_state.salary_needed and st.session_state.loan_request:
+    uploaded_file = st.file_uploader("Upload Salary Slip (PDF)", type=["pdf"])
+    if uploaded_file is not None:
+        amount, tenure = st.session_state.loan_request
+        decision, status = underwriting_agent(st.session_state["name"], amount, tenure, salary_slip_uploaded=True)
+        st.chat_message("assistant").markdown(decision)
+        if status is True:
+            st.session_state.approved = (amount, tenure)
+            st.session_state.salary_needed = False
+
+# Generate Sanction Letter if approved
+if isinstance(st.session_state.approved, tuple):
+    amount, tenure = st.session_state.approved
+    file_path = sanction_letter_generator(st.session_state["name"], amount, tenure)
+    if file_path and os.path.exists(file_path):
+        st.success("🎉 Congratulations! Your loan is approved.")
+        with open(file_path, "rb") as f:
+            st.download_button("📥 Download Sanction_
