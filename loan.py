@@ -125,4 +125,22 @@ if st.session_state.step==2:
 if st.session_state.step==3:
     customer = st.session_state.customer
     pan_verify = st.text_input("Enter PAN Number for KYC")
-    mobile_verify = st.text_input("
+    mobile_verify = st.text_input("Enter Mobile Number for KYC")
+    if st.button("Verify KYC"):
+        kyc_result = verification_agent(customer, pan_verify, mobile_verify)
+        st.write(kyc_result)
+        if "Successful" in kyc_result:
+            st.write("Bank: Sanction letter generation in process... ⏳")
+            time.sleep(1.5)
+            st.session_state.step = 4
+        else:
+            st.warning("KYC Failed. Please enter correct details.")
+
+# Step 4: Underwriting
+if st.session_state.step==4:
+    uw_result = underwriting_agent(st.session_state.customer, st.session_state.loan_amount)
+    st.write(f"Underwriting Result: {uw_result}")
+    if "Approved" in uw_result:
+        st.success("🎉 Loan is approved! Sanction letter will be available on next page.")
+    else:
+        st.error("Loan Rejected. Process ends here.")
