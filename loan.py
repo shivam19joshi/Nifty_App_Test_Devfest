@@ -89,7 +89,7 @@ st.subheader("हर ज़रूरत के लिए, हर कदम प�
 # Step 0: Get PAN & DOB
 if st.session_state.step==0:
     st.write("Hello! Customer Enter your Pan and DOB to verify")
-    pan_input = st.text_input("Enter Your PAN Number")
+    pan_input = st.text_input("Enter Your PAN Number in")
     dob_input = st.text_input("Enter Your Date of Birth (YYYY-MM-DD)")
     purpose = st.selectbox("Purpose of Loan", ["Travel", "Education", "Shopping", "Healthcare", "Other"])
     if st.button("Continue"):
@@ -105,7 +105,7 @@ if st.session_state.step==0:
 # Step 1: Pre-approved limit & loan request
 if st.session_state.step==1:
     customer = st.session_state.customer
-    st.write("Fetching pre-approved limit based on your credit profile...")
+    st.write("Fetching pre-approved limit based on your credit profile ⏳")
     time.sleep(2.5)
     st.write(sales_agent(customer, 0, 0, st.session_state.interest, st.session_state.purpose))
     loan_amount = st.number_input("Enter Loan Amount", min_value=10000, max_value=customer['pre_approved_limit'], step=5000)
@@ -117,22 +117,22 @@ if st.session_state.step==1:
 
 # Step 2: Checking with CIBIL Bureau
 if st.session_state.step==2:
-    st.write("Bank: Fetching your CIBIL score from Bureau...")
-    time.sleep(2)
+    st.write("Bank: Fetching your CIBIL score from Bureau ⏳")
+    time.sleep(5)
     st.write(f"Bank: Your CIBIL score is {st.session_state.customer['cibil_score']} ✅")
     st.session_state.step = 3
 
 # Step 3: KYC Verification
 if st.session_state.step==3:
     customer = st.session_state.customer
-    pan_verify = st.text_input("Enter PAN Number for KYC")
+    pan_verify = st.text_input("Enter PAN Number in CAPS for KYC")
     mobile_verify = st.text_input("Enter Mobile Number for KYC")
     if st.button("Verify KYC"):
         kyc_result = verification_agent(customer, pan_verify, mobile_verify)
         st.write(kyc_result)
         if "Successful" in kyc_result:
             st.write("Bank: Sanction letter generation in process... ⏳")
-            time.sleep(1.5)
+            time.sleep(4.5)
             st.session_state.step = 4
         else:
             st.warning("KYC Failed. Please enter correct details.")
@@ -145,4 +145,7 @@ if st.session_state.step==4:
         st.success("🎉 Loan is approved! Sanction letter will be available on next page.")
     else:
         st.error("Loan Rejected. Process ends here.")
+
+
+
 st.subheader("Created By Shivam Joshi")
