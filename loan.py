@@ -87,8 +87,8 @@ st.title("💬 Welcome To Tata Capital Loan Chatbot")
 customer_name = st.selectbox("Select Customer", customers["name"].tolist())
 customer = customers[customers["name"]==customer_name].iloc[0]
 
-st.subheader("Step 1: Loan Request")
-st.write("Customer: Hello, I want a personal loan.")
+st.subheader("Loan Request")
+st.write("Hello, I want a personal loan.")
 
 # Step 2: Show pre-approved limit and choose loan amount/tenure
 loan_amount = st.number_input(f"Enter Loan Amount (max ₹{customer['pre_approved_limit']})", 
@@ -97,7 +97,7 @@ tenure = st.selectbox("Select Tenure (years)", [1,2,3,4,5])
 st.write(sales_agent(customer, loan_amount, tenure))
 
 # Step 3: KYC Verification
-st.subheader("Step 2: KYC Verification")
+st.subheader("KYC Verification")
 entered_pan = st.text_input("Enter PAN Number")
 entered_mobile = st.text_input("Enter Mobile Number")
 if st.button("Verify KYC"):
@@ -105,6 +105,6 @@ if st.button("Verify KYC"):
     st.write(kyc_result)
     
     if "✅" in kyc_result:
-        st.subheader("Step 3: Underwriting")
+        st.subheader("Underwriting")
         uw_result = underwriting_agent(customer, loan_amount, tenure)
         st.write(uw_result)
