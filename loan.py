@@ -2,18 +2,15 @@ import streamlit as st
 import pandas as pd
 from fpdf import FPDF
 import os
-import urllib.request
 
 # ---------------------------
-# Ensure Unicode Font
+# Font setup (local only)
 # ---------------------------
-FONT_URL = "https://github.com/dejavu-fonts/dejavu-fonts/raw/master/ttf/DejaVuSans.ttf"
 FONT_FILE = "DejaVuSans.ttf"
 
 if not os.path.exists(FONT_FILE):
-    st.info("Downloading font for PDF generation...")
-    urllib.request.urlretrieve(FONT_URL, FONT_FILE)
-    st.success("Font downloaded ✅")
+    st.error("Font file 'DejaVuSans.ttf' not found! Please add it to the project folder.")
+    st.stop()
 
 # ---------------------------
 # Synthetic Customer Data
@@ -67,7 +64,7 @@ def underwriting_agent(customer, loan_amount, tenure, salary_slip_uploaded=False
         if not salary_slip_uploaded:
             return "Underwriting Agent: 📄 Please upload salary slip for verification."
         else:
-            emi = (loan_amount / (tenure * 12)) * 1.1  # Simple EMI calculation
+            emi = (loan_amount / (tenure * 12)) * 1.1
             if emi <= 0.5 * salary:
                 return "Underwriting Agent: ✅ Approved after salary slip verification."
             return "Underwriting Agent: ❌ Rejected, EMI exceeds 50% of salary."
@@ -106,7 +103,7 @@ Tata Capital Loan Team
     return file_name
 
 # ---------------------------
-# Master Agent Orchestration (Streamlit)
+# Master Agent Orchestration
 # ---------------------------
 st.title("💬 Tata Capital - Agentic AI Loan Assistant")
 
