@@ -1,17 +1,8 @@
 import streamlit as st
 import pandas as pd
 from fpdf import FPDF
-import os
 
 st.set_page_config(page_title="Tata Capital Loan Assistant", layout="wide")
-
-# ---------------------------
-# Font setup (local)
-# ---------------------------
-FONT_FILE = "DejaVuSans.ttf"
-if not os.path.exists(FONT_FILE):
-    st.warning("Font file 'DejaVuSans.ttf' not found. Please add it to project folder.")
-    st.stop()
 
 # ---------------------------
 # Synthetic Customer Data
@@ -50,13 +41,12 @@ def underwriting_agent(customer, loan_amount, tenure):
     return "Underwriting Agent: ❌ Loan exceeds 2× pre-approved limit."
 
 # ---------------------------
-# Sanction Letter Generator
+# Sanction Letter Generator (default font)
 # ---------------------------
 def generate_sanction_letter(customer, loan_amount, tenure):
     pdf = FPDF()
     pdf.add_page()
-    pdf.add_font("DejaVu", "", FONT_FILE, uni=True)
-    pdf.set_font("DejaVu", size=12)
+    pdf.set_font("Arial", size=12)  # <-- default built-in font
     text = f"""
 Loan Sanction Letter
 
