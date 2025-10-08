@@ -9,45 +9,45 @@ st.set_page_config(page_title="Tata Capital Loan Assistant", layout="wide")
 # Customer Data (20 customers)
 # ---------------------------
 customers_data = [
-    {"name": "Amit Sharma", "age": 32, "mobile": "9999991111", "address": "Mumbai",
+    {"name": "Amit Sharma", "dob": "1992-03-15", "mobile": "9999991111", "address": "Mumbai",
      "cibil_score": 780, "pre_approved_limit": 500000, "pan": "ABCDE1234F"},
-    {"name": "Priya Iyer", "age": 28, "mobile": "8888882222", "address": "Delhi",
+    {"name": "Priya Iyer", "dob": "1996-07-20", "mobile": "8888882222", "address": "Delhi",
      "cibil_score": 720, "pre_approved_limit": 300000, "pan": "PQRS5678K"},
-    {"name": "Rohit Gupta", "age": 40, "mobile": "7777773333", "address": "Pune",
+    {"name": "Rohit Gupta", "dob": "1984-11-05", "mobile": "7777773333", "address": "Pune",
      "cibil_score": 650, "pre_approved_limit": 200000, "pan": "LMNO9012T"},
-    {"name": "Neha Verma", "age": 35, "mobile": "6666664444", "address": "Nagpur",
+    {"name": "Neha Verma", "dob": "1989-08-12", "mobile": "6666664444", "address": "Nagpur",
      "cibil_score": 810, "pre_approved_limit": 700000, "pan": "QRST3456U"},
-    {"name": "Karan Mehta", "age": 29, "mobile": "9998887777", "address": "Bangalore",
+    {"name": "Karan Mehta", "dob": "1995-01-25", "mobile": "9998887777", "address": "Bangalore",
      "cibil_score": 690, "pre_approved_limit": 250000, "pan": "UVWX7890Y"},
-    {"name": "Sneha Nair", "age": 31, "mobile": "5554443333", "address": "Hyderabad",
+    {"name": "Sneha Nair", "dob": "1993-05-10", "mobile": "5554443333", "address": "Hyderabad",
      "cibil_score": 760, "pre_approved_limit": 600000, "pan": "JKLM2345A"},
-    {"name": "Vikram Singh", "age": 38, "mobile": "4445556666", "address": "Chennai",
+    {"name": "Vikram Singh", "dob": "1986-02-18", "mobile": "4445556666", "address": "Chennai",
      "cibil_score": 720, "pre_approved_limit": 400000, "pan": "EFGH3456B"},
-    {"name": "Anita Desai", "age": 27, "mobile": "3332221111", "address": "Ahmedabad",
+    {"name": "Anita Desai", "dob": "1997-09-03", "mobile": "3332221111", "address": "Ahmedabad",
      "cibil_score": 770, "pre_approved_limit": 350000, "pan": "IJKL5678C"},
-    {"name": "Rajat Kapoor", "age": 34, "mobile": "2223334444", "address": "Kolkata",
+    {"name": "Rajat Kapoor", "dob": "1989-12-27", "mobile": "2223334444", "address": "Kolkata",
      "cibil_score": 800, "pre_approved_limit": 550000, "pan": "MNOP6789D"},
-    {"name": "Megha Patil", "age": 30, "mobile": "1112223333", "address": "Surat",
+    {"name": "Megha Patil", "dob": "1994-04-22", "mobile": "1112223333", "address": "Surat",
      "cibil_score": 710, "pre_approved_limit": 300000, "pan": "QRST8901E"},
-    {"name": "Sandeep Jain", "age": 36, "mobile": "9991112222", "address": "Jaipur",
+    {"name": "Sandeep Jain", "dob": "1988-06-14", "mobile": "9991112222", "address": "Jaipur",
      "cibil_score": 690, "pre_approved_limit": 280000, "pan": "UVWX2345F"},
-    {"name": "Ritu Malhotra", "age": 33, "mobile": "8882221111", "address": "Lucknow",
+    {"name": "Ritu Malhotra", "dob": "1991-10-05", "mobile": "8882221111", "address": "Lucknow",
      "cibil_score": 740, "pre_approved_limit": 500000, "pan": "ABCD3456G"},
-    {"name": "Aditya Rao", "age": 29, "mobile": "7771112222", "address": "Bhopal",
+    {"name": "Aditya Rao", "dob": "1995-03-11", "mobile": "7771112222", "address": "Bhopal",
      "cibil_score": 730, "pre_approved_limit": 320000, "pan": "EFGH4567H"},
-    {"name": "Pooja Sharma", "age": 31, "mobile": "6662221111", "address": "Chandigarh",
+    {"name": "Pooja Sharma", "dob": "1993-12-29", "mobile": "6662221111", "address": "Chandigarh",
      "cibil_score": 780, "pre_approved_limit": 450000, "pan": "IJKL5678I"},
-    {"name": "Manish Gupta", "age": 37, "mobile": "5551112222", "address": "Indore",
+    {"name": "Manish Gupta", "dob": "1987-07-17", "mobile": "5551112222", "address": "Indore",
      "cibil_score": 760, "pre_approved_limit": 480000, "pan": "MNOP6789J"},
-    {"name": "Divya Singh", "age": 28, "mobile": "4441112222", "address": "Patna",
+    {"name": "Divya Singh", "dob": "1996-05-28", "mobile": "4441112222", "address": "Patna",
      "cibil_score": 720, "pre_approved_limit": 350000, "pan": "QRST7890K"},
-    {"name": "Vivek Mehra", "age": 35, "mobile": "3331112222", "address": "Coimbatore",
+    {"name": "Vivek Mehra", "dob": "1989-09-30", "mobile": "3331112222", "address": "Coimbatore",
      "cibil_score": 750, "pre_approved_limit": 400000, "pan": "UVWX8901L"},
-    {"name": "Shweta Joshi", "age": 30, "mobile": "2221113333", "address": "Nagpur",
+    {"name": "Shweta Joshi", "dob": "1994-11-02", "mobile": "2221113333", "address": "Nagpur",
      "cibil_score": 770, "pre_approved_limit": 370000, "pan": "ABCD9012M"},
-    {"name": "Aakash Sharma", "age": 32, "mobile": "1113332222", "address": "Delhi",
+    {"name": "Aakash Sharma", "dob": "1992-08-19", "mobile": "1113332222", "address": "Delhi",
      "cibil_score": 800, "pre_approved_limit": 600000, "pan": "EFGH0123N"},
-    {"name": "Rhea Kapoor", "age": 29, "mobile": "9993332222", "address": "Mumbai",
+    {"name": "Rhea Kapoor", "dob": "1995-04-14", "mobile": "9993332222", "address": "Mumbai",
      "cibil_score": 740, "pre_approved_limit": 320000, "pan": "IJKL1234O"},
 ]
 
@@ -82,16 +82,23 @@ def underwriting_agent(customer, loan_amount):
 # ---------------------------
 if "step" not in st.session_state:
     st.session_state.step = 0
-    st.session_state.customer = random.choice(customers_data)  # random customer
-    st.session_state.interest = random.randint(16,24)          # random interest
+    st.session_state.customer = None
+    st.session_state.interest = random.randint(16,24)  # random interest
 
 st.title("💰 Tata Capital Loan Assistant")
 
-# Step 0: Initial greeting
+# Step 0: Get Name & DOB
 if st.session_state.step==0:
-    st.write("Bank: Hello! Welcome to Tata Capital. How can I help you today?")
-    if st.button("I want a personal loan"):
-        st.session_state.step = 1
+    name_input = st.text_input("Enter Your Full Name")
+    dob_input = st.text_input("Enter Your Date of Birth (YYYY-MM-DD)")
+    if st.button("Continue"):
+        # Find customer by name & DOB
+        matched = [c for c in customers_data if c["name"].lower()==name_input.lower() and c["dob"]==dob_input]
+        if matched:
+            st.session_state.customer = matched[0]
+            st.session_state.step = 1
+        else:
+            st.warning("No customer found with these details. Please check your input.")
 
 # Step 1: Pre-approved limit & loan request
 if st.session_state.step==1:
