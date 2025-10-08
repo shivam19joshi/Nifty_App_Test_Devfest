@@ -88,7 +88,7 @@ st.subheader("हर ज़रूरत के लिए, हर कदम प�
 
 # Step 0: Get PAN & DOB
 if st.session_state.step==0:
-    st.subheader("Hello! Customer Enter your Pan and DOB to verify")
+    st.body("Hello! Customer Enter your Pan and DOB to verify")
     pan_input = st.text_input("Enter Your PAN Number")
     dob_input = st.text_input("Enter Your Date of Birth (YYYY-MM-DD)")
     purpose = st.selectbox("Purpose of Loan", ["Travel", "Education", "Shopping", "Healthcare", "Other"])
