@@ -149,17 +149,22 @@ if st.session_state.step==4:
 # ---------------------------
 # Step 5: Sanction Letter
 # ---------------------------
-
 import streamlit as st
 from fpdf import FPDF
+from io import BytesIO
 import pandas as pd
 
-# Ensure required session_state variables exist
-required_keys = ["customer", "loan_amount", "tenure", "interest", "purpose"]
+# Check session_state variables
+required_keys = ["customer", "loan_amount", "tenure", "interest", "purpose", "underwriting_result"]
 for key in required_keys:
     if key not in st.session_state:
         st.warning(f"{key} not set yet! Complete previous steps first.")
-        st.stop()  # stops execution until previous steps done
+        st.stop()
+
+# Only proceed if underwriting approved
+if "Approved" not in st.session_state.underwriting_result:
+    st.error("Loan not approved. Sanction letter cannot be generated.")
+    st.stop()
 
 customer = st.session_state.customer
 loan_amount = st.session_state.loan_amount
@@ -167,7 +172,7 @@ tenure = st.session_state.tenure
 interest = st.session_state.interest
 purpose = st.session_state.purpose
 
-# PDF generation
+# PDF generation in memory
 pdf = FPDF()
 pdf.add_page()
 pdf.set_font("Arial", "B", 16)
@@ -175,7 +180,7 @@ pdf.cell(0, 10, "Tata Capital Finance Pvt. Ltd.", ln=True, align="C")
 pdf.set_font("Arial", "", 12)
 pdf.ln(10)
 
-pdf.multi_cell(0, 8, f"""
+text = f"""
 Sanction Letter
 Date: {pd.Timestamp.now().date()}
 
@@ -185,7 +190,7 @@ We are pleased to inform you that your loan application has been reviewed and sa
 
 Customer Details:
 Name: {customer['name']}
-Date of Birth: {customer['dob']}
+Date of Birth: {customer.get('dob', 'N/A')}
 Mobile: {customer['mobile']}
 Address: {customer['address']}
 
@@ -204,17 +209,24 @@ Terms & Conditions:
 
 Please sign and return the duplicate copy of this sanction letter to proceed with disbursal.
 
-We thank you for choosing Tata Capital for your financial needs.
-
 Sincerely,
 Tata Capital Loan Desk
-""")
+"""
 
-file_name = f"Sanction_Letter_{customer['name'].replace(' ','_')}.pdf"
-pdf.output(file_name)
+pdf.multi_cell(0, 8, text)
 
-st.success("✅ Sanction Letter generated successfully!")
-st.download_button("Download Sanction Letter", file_name, file_name, "application/pdf")
+# Save PDF to BytesIO
+pdf_buffer = BytesIO()
+pdf.output(pdf_buffer)
+pdf_buffer.seek(0)
+
+st.success("✅ Sanction Letter is ready!")
+st.download_button(
+    label="Download Sanction Letter",
+    data=pdf_buffer,
+    file_name=f"Sanction_Letter_{customer['name'].replace(' ','_')}.pdf",
+    mime="application/pdf"
+)
 
 
 st.write("Created By Shivam Joshi")
