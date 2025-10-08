@@ -1,10 +1,12 @@
 import streamlit as st
 import pandas as pd
+import random
+import time
 
 st.set_page_config(page_title="Tata Capital Loan Assistant", layout="wide")
 
 # ---------------------------
-# Customer Data
+# Customer Data (20 customers)
 # ---------------------------
 customers_data = [
     {"name": "Amit Sharma", "age": 32, "mobile": "9999991111", "address": "Mumbai",
@@ -49,14 +51,13 @@ customers_data = [
      "cibil_score": 740, "pre_approved_limit": 320000, "pan": "IJKL1234O"},
 ]
 
-
 customers = pd.DataFrame(customers_data)
 
 # ---------------------------
 # Worker Agents
 # ---------------------------
 def sales_agent(customer, loan_amount, tenure, interest):
-    return f"Hello {customer['name']}! Your pre-approved limit is ₹{customer['pre_approved_limit']}. You requested ₹{loan_amount} for {tenure} years at {interest}% p.a."
+    return f"Bank: Hello {customer['name']}! Your pre-approved limit is ₹{customer['pre_approved_limit']}. You requested ₹{loan_amount} for {tenure} years at {interest}% p.a."
 
 def verification_agent(customer, pan, mobile):
     pan_check = "✅" if pan==customer["pan"] else "❌"
@@ -81,40 +82,42 @@ def underwriting_agent(customer, loan_amount):
 # ---------------------------
 if "step" not in st.session_state:
     st.session_state.step = 0
+    st.session_state.customer = random.choice(customers_data)  # random customer
+    st.session_state.interest = random.randint(16,24)          # random interest
 
 st.title("💰 Tata Capital Loan Assistant")
 
-# Step 0: Select Customer
+# Step 0: Initial greeting
 if st.session_state.step==0:
-    customer_name = st.selectbox("Select Customer", customers["name"].tolist())
-    if st.button("Start Loan Process"):
-        st.session_state.customer = customers[customers["name"]==customer_name].iloc[0]
+    st.write("Bank: Hello! Welcome to Tata Capital. How can I help you today?")
+    if st.button("I want a personal loan"):
         st.session_state.step = 1
 
-# Step 1: Show pre-approved limit & choose loan
+# Step 1: Pre-approved limit & loan request
 if st.session_state.step==1:
     customer = st.session_state.customer
-    st.write(f"Hello {customer['name']}! Your pre-approved limit is ₹{customer['pre_approved_limit']}.")
+    st.write(sales_agent(customer, 0, 0, st.session_state.interest))
     loan_amount = st.number_input("Enter Loan Amount", min_value=10000, max_value=customer['pre_approved_limit'], step=5000)
     tenure = st.selectbox("Select Tenure (years)", [1,2,3,4,5])
-    if st.button("Next: Interest Rate"):
+    if st.button("Proceed to KYC"):
         st.session_state.loan_amount = loan_amount
         st.session_state.tenure = tenure
         st.session_state.step = 2
 
-# Step 2: Interest Rate Selection
+# Step 2: Checking with CIBIL Bureau (realistic message)
 if st.session_state.step==2:
-    interest = st.slider("Select Interest Rate (%)", 16, 24, 18)
-    if st.button("Next: KYC"):
-        st.session_state.interest = interest
-        st.session_state.step = 3
+    st.write("Bank: Checking your credit history with CIBIL Bureau...")
+    time.sleep(1.5)  # simulate delay
+    st.write("Bank: Credit check complete ✅")
+    st.session_state.step = 3
 
 # Step 3: KYC Verification
 if st.session_state.step==3:
+    customer = st.session_state.customer
     pan = st.text_input("Enter PAN Number")
     mobile = st.text_input("Enter Mobile Number")
     if st.button("Verify KYC"):
-        kyc_result = verification_agent(st.session_state.customer, pan, mobile)
+        kyc_result = verification_agent(customer, pan, mobile)
         st.write(kyc_result)
         if "Approved" in kyc_result:
             st.session_state.step = 4
