@@ -149,9 +149,18 @@ if st.session_state.step==4:
 # ---------------------------
 # Step 5: Sanction Letter
 # ---------------------------
+import streamlit as st
 from fpdf import FPDF
 import pandas as pd
 
+# Fetch data from session_state
+customer = st.session_state.customer
+loan_amount = st.session_state.loan_amount
+tenure = st.session_state.tenure
+interest = st.session_state.interest
+purpose = st.session_state.purpose
+
+# PDF generation
 pdf = FPDF()
 pdf.add_page()
 pdf.set_font("Arial", "B", 16)
@@ -196,6 +205,10 @@ Tata Capital Loan Desk
 
 file_name = f"Sanction_Letter_{customer['name'].replace(' ','_')}.pdf"
 pdf.output(file_name)
+
+st.success("✅ Sanction Letter generated successfully!")
+st.download_button("Download Sanction Letter", file_name, file_name, "application/pdf")
+
 
 
 
