@@ -51,20 +51,18 @@ customers_data = [
      "cibil_score": 740, "pre_approved_limit": 320000, "pan": "IJKL1234O"},
 ]
 
-customers = pd.DataFrame(customers_data)
-
 # ---------------------------
 # Worker Agents
 # ---------------------------
-def sales_agent(customer, loan_amount, tenure, interest):
-    return f"Bank: Hello {customer['name']}! Your pre-approved limit is ₹{customer['pre_approved_limit']}. You requested ₹{loan_amount} for {tenure} years at {interest}% p.a."
+def sales_agent(customer, loan_amount, tenure, interest, purpose):
+    return f"Bank: Hello {customer['name']}! Your pre-approved limit is ₹{customer['pre_approved_limit']}. You requested ₹{loan_amount} for {tenure} years at {interest}% p.a. Purpose: {purpose}"
 
 def verification_agent(customer, pan, mobile):
     pan_check = "✅" if pan==customer["pan"] else "❌"
     mobile_check = "✅" if mobile==customer["mobile"] else "❌"
     if pan_check=="✅" and mobile_check=="✅":
-        return "KYC Approved ✅"
-    return f"KYC Failed ❌ (PAN:{pan_check}, Mobile:{mobile_check})"
+        return "KYC Verification Successful ✅"
+    return f"KYC Verification Failed ❌ (PAN:{pan_check}, Mobile:{mobile_check})"
 
 def underwriting_agent(customer, loan_amount):
     if customer["cibil_score"] < 700:
@@ -85,17 +83,20 @@ if "step" not in st.session_state:
     st.session_state.customer = None
     st.session_state.interest = random.randint(16,24)  # random interest
 
-st.title("💰 Tata Capital Loan Assistant")
+st.title("💰 Tata Capital Personal Loan Portal")
+st.subheader("Transforming aspirations into realities")
 
-# Step 0: Get Name & DOB
+# Step 0: Get PAN & DOB
 if st.session_state.step==0:
-    name_input = st.text_input("Enter Your Full Name")
+    pan_input = st.text_input("Enter Your PAN Number")
     dob_input = st.text_input("Enter Your Date of Birth (YYYY-MM-DD)")
+    purpose = st.selectbox("Purpose of Loan", ["Travel", "Education", "Shopping", "Healthcare", "Other"])
     if st.button("Continue"):
-        # Find customer by name & DOB
-        matched = [c for c in customers_data if c["name"].lower()==name_input.lower() and c["dob"]==dob_input]
+        # Find customer by PAN & DOB
+        matched = [c for c in customers_data if c["pan"].upper()==pan_input.upper() and c["dob"]==dob_input]
         if matched:
             st.session_state.customer = matched[0]
+            st.session_state.purpose = purpose
             st.session_state.step = 1
         else:
             st.warning("No customer found with these details. Please check your input.")
@@ -103,39 +104,25 @@ if st.session_state.step==0:
 # Step 1: Pre-approved limit & loan request
 if st.session_state.step==1:
     customer = st.session_state.customer
-    st.write(sales_agent(customer, 0, 0, st.session_state.interest))
+    st.write("Fetching pre-approved limit based on your credit profile...")
+    time.sleep(1.5)
+    st.write(sales_agent(customer, 0, 0, st.session_state.interest, st.session_state.purpose))
     loan_amount = st.number_input("Enter Loan Amount", min_value=10000, max_value=customer['pre_approved_limit'], step=5000)
     tenure = st.selectbox("Select Tenure (years)", [1,2,3,4,5])
-    if st.button("Proceed to KYC"):
+    if st.button("Proceed to Credit Check"):
         st.session_state.loan_amount = loan_amount
         st.session_state.tenure = tenure
         st.session_state.step = 2
 
-# Step 2: Checking with CIBIL Bureau (realistic message)
+# Step 2: Checking with CIBIL Bureau
 if st.session_state.step==2:
-    st.write("Bank: Checking your credit history with CIBIL Bureau...")
-    time.sleep(1.5)  # simulate delay
-    st.write("Bank: Credit check complete ✅")
+    st.write("Bank: Fetching your CIBIL score from Bureau...")
+    time.sleep(2)
+    st.write(f"Bank: Your CIBIL score is {st.session_state.customer['cibil_score']} ✅")
     st.session_state.step = 3
 
 # Step 3: KYC Verification
 if st.session_state.step==3:
     customer = st.session_state.customer
-    pan = st.text_input("Enter PAN Number")
-    mobile = st.text_input("Enter Mobile Number")
-    if st.button("Verify KYC"):
-        kyc_result = verification_agent(customer, pan, mobile)
-        st.write(kyc_result)
-        if "Approved" in kyc_result:
-            st.session_state.step = 4
-        else:
-            st.warning("KYC Failed. Please enter correct details.")
-
-# Step 4: Underwriting
-if st.session_state.step==4:
-    uw_result = underwriting_agent(st.session_state.customer, st.session_state.loan_amount)
-    st.write(f"Underwriting Result: {uw_result}")
-    if "Approved" in uw_result:
-        st.success("🎉 Loan is ready to be sanctioned on next page!")
-    else:
-        st.error("Loan Rejected. Process ends here.")
+    pan_verify = st.text_input("Enter PAN Number for KYC")
+    mobile_verify = st.text_input("
