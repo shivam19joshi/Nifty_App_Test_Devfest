@@ -146,6 +146,81 @@ if st.session_state.step==4:
     else:
         st.error("Loan Rejected. Process ends here.")
 
+import streamlit as st
+from fpdf import FPDF
+import random
+
+# ---------------------------
+# Sanction Letter Generator
+# ---------------------------
+def generate_sanction_letter(customer, loan_amount, tenure, interest, purpose):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", "B", 16)
+    
+    pdf.cell(0, 10, "Tata Capital Finance Pvt. Ltd.", ln=True, align="C")
+    pdf.set_font("Arial", "", 12)
+    pdf.ln(10)
+    
+    pdf.multi_cell(0, 8, f"""
+Sanction Letter
+Date: {pd.Timestamp.now().date()}
+
+Dear {customer['name']},
+
+We are pleased to inform you that your loan application has been reviewed and sanctioned as per the following terms:
+
+Customer Details:
+Name: {customer['name']}
+Date of Birth: {customer['dob']}
+Mobile: {customer['mobile']}
+Address: {customer['address']}
+
+Loan Details:
+Purpose of Loan: {purpose}
+Sanctioned Loan Amount: ₹{loan_amount}
+Tenure: {tenure} years
+Interest Rate: {interest}% p.a.
+
+Terms & Conditions:
+1. The loan must be utilized solely for the stated purpose.
+2. All EMI payments shall be made on or before the due date.
+3. Prepayment/foreclosure charges as per the bank policy apply.
+4. The loan remains subject to compliance with Tata Capital’s policies.
+5. CIBIL score may be periodically reviewed during the tenure of the loan.
+
+Please sign and return the duplicate copy of this sanction letter to proceed with disbursal.
+
+We thank you for choosing Tata Capital for your financial needs.
+
+Sincerely,
+Tata Capital Loan Desk
+""")
+    
+    file_name = f"Sanction_Letter_{customer['name'].replace(' ','_')}.pdf"
+    pdf.output(file_name)
+    return file_name
+
+# ---------------------------
+# Streamlit UI
+# ---------------------------
+st.title("📄 Loan Sanction Letter")
+st.write("Generating your official sanction letter...")
+
+# Fetch details from session_state
+customer = st.session_state.customer
+loan_amount = st.session_state.loan_amount
+tenure = st.session_state.tenure
+interest = st.session_state.interest
+purpose = st.session_state.purpose
+
+# Generate PDF
+file_name = generate_sanction_letter(customer, loan_amount, tenure, interest, purpose)
+
+st.success("✅ Sanction Letter generated successfully!")
+st.write("Download your official loan sanction letter below:")
+st.download_button("Download PDF", file_name, file_name)
+
 
 
 st.write("Created By Shivam Joshi")
