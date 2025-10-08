@@ -107,7 +107,7 @@ if st.session_state.step==1:
     customer = st.session_state.customer
     st.write("Fetching pre-approved limit based on your credit profile ⏳")
     time.sleep(2.5)
-    st.write(sales_agent(customer, 0, 0, st.session_state.interest, st.session_state.purpose))
+    st.write(sales_agent(customer,st.session_state.interest, st.session_state.purpose))
     loan_amount = st.number_input("Enter Loan Amount", min_value=10000, max_value=customer['pre_approved_limit'], step=5000)
     tenure = st.selectbox("Select Tenure (years)", [1,2,3,4,5])
     if st.button("Proceed to Credit Check"):
