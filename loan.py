@@ -1,8 +1,6 @@
 import streamlit as st
-import random
 import pandas as pd
 from fpdf import FPDF
-import os
 
 # ---------------------------
 # Synthetic Data
@@ -69,12 +67,15 @@ def underwriting_agent(customer, loan_amount, tenure, salary_slip_uploaded=False
 
 def sanction_letter_generator(customer, loan_amount, tenure):
     file_name = f"Sanction_Letter_{customer['name'].replace(' ', '_')}.pdf"
+    
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, "Loan Sanction Letter", ln=True, align='C')
+    
+    pdf.cell(200, 10, txt="Loan Sanction Letter", ln=True, align='C')
     pdf.ln(10)
-    pdf.multi_cell(0, 10, f"""
+    
+    text = f"""
     Dear {customer['name']},
 
     Congratulations! Your personal loan request has been approved.
@@ -89,7 +90,8 @@ def sanction_letter_generator(customer, loan_amount, tenure):
 
     Sincerely,
     Tata Capital Loan Team
-    """)
+    """
+    pdf.multi_cell(0, 10, txt=text)
     pdf.output(file_name)
     return file_name
 
@@ -101,7 +103,8 @@ st.title("💬 Tata Capital - Agentic AI Loan Sales Assistant")
 customer_name = st.selectbox("Select Customer", customers["name"].tolist())
 customer = customers[customers["name"] == customer_name].iloc[0]
 
-st.write(f"👤 Customer Profile: {customer.to_dict()}")
+st.write("### 👤 Customer Profile")
+st.json(customer.to_dict())
 
 loan_amount = st.number_input("Enter Loan Amount (₹)", 50000, 1000000, 200000, 5000)
 tenure = st.slider("Select Tenure (years)", 1, 10, 3)
@@ -128,11 +131,11 @@ if st.button("Start Loan Process"):
                 st.write(uw_msg)
                 if "✅" in uw_msg:
                     file_name = sanction_letter_generator(customer, loan_amount, tenure)
-                    st.success("Sanction Letter Generated!")
+                    st.success("✅ Sanction Letter Generated!")
                     with open(file_name, "rb") as f:
-                        st.download_button("Download Sanction Letter", f, file_name=file_name)
+                        st.download_button("⬇️ Download Sanction Letter", f, file_name=file_name)
         elif "✅" in underwriting_msg:
             file_name = sanction_letter_generator(customer, loan_amount, tenure)
-            st.success("Sanction Letter Generated!")
+            st.success("✅ Sanction Letter Generated!")
             with open(file_name, "rb") as f:
-                st.download_button("Download Sanction Letter", f, file_name=file_name)
+                st.download_button("⬇️ Download Sanction Letter", f, file_name=file_name)
