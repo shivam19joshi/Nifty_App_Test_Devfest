@@ -3,7 +3,7 @@ import pandas as pd
 import random
 import time
 
-st.set_page_config(page_title="Tata Capital Loan Assistant", layout="wide")
+st.set_page_config(page_title="Tata Capital Assistant", layout="wide")
 
 # ---------------------------
 # Customer Data (20 customers)
@@ -83,8 +83,9 @@ if "step" not in st.session_state:
     st.session_state.customer = None
     st.session_state.interest = random.randint(16,24)  # random interest
 
-st.title("💰 Tata Capital Personal Loan Portal")
-st.subheader("Transforming aspirations into realities")
+st.title("Welcome To Tata Capital Personal Loan Smart Chat")
+st.subheader("Transforming Aspirations into Realities")
+st.subheader("Hello! Customer Enter your Pan and DOB to verify")
 
 # Step 0: Get PAN & DOB
 if st.session_state.step==0:
@@ -105,7 +106,7 @@ if st.session_state.step==0:
 if st.session_state.step==1:
     customer = st.session_state.customer
     st.write("Fetching pre-approved limit based on your credit profile...")
-    time.sleep(1.5)
+    time.sleep(2.5)
     st.write(sales_agent(customer, 0, 0, st.session_state.interest, st.session_state.purpose))
     loan_amount = st.number_input("Enter Loan Amount", min_value=10000, max_value=customer['pre_approved_limit'], step=5000)
     tenure = st.selectbox("Select Tenure (years)", [1,2,3,4,5])
