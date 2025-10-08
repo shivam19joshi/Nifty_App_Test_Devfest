@@ -185,7 +185,7 @@ Address: {customer['address']}
 
 Loan Details:
 Purpose of Loan: {purpose}
-Sanctioned Loan Amount: ₹{loan_amount}
+Sanctioned Loan Amount: INR {loan_amount}
 Tenure: {tenure} years
 Interest Rate: {interest}% p.a.
 
