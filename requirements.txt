@@ -1,8 +1,4 @@
-pandas 
-numpy
-matplotlib
-seaborn 
-plotly
-streamlit
-fpdf
-fpdf2
+fpdf==1.7.2
+pandas==3.0.0
+plotly==5.24.1
+streamlit==1.37.1
